@@ -1,4 +1,4 @@
-##KT-Parser
+## KT-Parser
 
 본 저장소는 PNU AILAB KT-Parser 과제수행을 위한 Dependency Parsing model 코드 공유를 위한 것입니다.
 
