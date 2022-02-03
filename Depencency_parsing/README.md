@@ -52,18 +52,18 @@ train_batch_size: 학습을 위한 배치 사이즈를 나타내며, 사용하�
 warmup_ratio: 지정한 비율만큼 처음 학습을 시작했을 때, 훨씬 작은 Learning Rate로 학습을 하도록 하는 파라미터입니다.
 
 
-학습 명령어
+- 학습 명령어
 
 python run_klue.py train --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base --learning_rate 3e-5 --num_train_epochs 5 --train_batch_size 16 --eval_batch_size 8 --max_seq_length 510 --gradient_accumulation_steps 2 --warmup_ratio 0.2 --weight_decay 0.01 --max_grad_norm 1.0 --patience 100000 --metric_key slot_micro_f1 --gpus 0 --num_workers 4
 
 
-평가 명령어
+- 평가 명령어
 
 python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 256 --metric_key las_macro_f1 --gpus 0 --num_workers 4
 
 
 
-테스트 명령어
+- 테스트 명령어
 
 python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base #--learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 256 --metric_key las_macro_f1 --gpus 0 --num_workers 4
 
