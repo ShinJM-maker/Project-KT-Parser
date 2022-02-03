@@ -30,8 +30,11 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 파서 코드 실행을 위해 필요한 변수는 다음과 같습니다.
 
 OUTPUT_DIR="klue_output"
+
 DATA_DIR="data/klue_benchmark"  # default submodule for data from https://github.com/KLUE-benchmark/KLUE
+
 VERSION="v1.1"
+
 task="klue-dp"
 
 OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타내며, DATA_DIR은 학습 및 평가를 위한 데이터의 위치를 나타냅니다.
