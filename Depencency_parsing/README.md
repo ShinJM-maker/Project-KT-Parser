@@ -19,6 +19,12 @@ pip install -r requirements.txt
 All expereiments are tested under Python 3.7 environment.
 
 
+## 모델 구현 코드
+
+DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있습니다. (DPTransformer 클래스)
+
+
+
 ## 실행
 
 파서 코드 실행을 위해 필요한 변수는 다음과 같습니다.
@@ -67,3 +73,9 @@ python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${D
 ## 데모 실행 버전(예정)
 
 추후 업데이트 할 예정입니다
+
+## Reference
+
+https://www.koreascience.or.kr/article/CFKO202130060562801.pdf
+
+https://github.com/KLUE-benchmark/KLUE
