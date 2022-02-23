@@ -70,7 +70,7 @@ python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${D
 
 ## 학습된 모형 배포 (예정)
 
-추후 업데이트 할 예정입니다
+http://pnuailab.synology.me/sharing/irbmcpyIY
 
 
 ## 데모 실행 버전(예정)
