@@ -68,7 +68,7 @@ python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${D
 python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base #--learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 256 --metric_key las_macro_f1 --gpus 0 --num_workers 4
 
 
-## 학습된 모형 배포 (예정)
+## 학습된 모형 배포
 
 http://pnuailab.synology.me/sharing/irbmcpyIY
 
