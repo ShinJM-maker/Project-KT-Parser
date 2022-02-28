@@ -31,7 +31,7 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 
 OUTPUT_DIR="klue_output"
 
-DATA_DIR="data/klue_benchmark"  # default submodule for data from https://github.com/KLUE-benchmark/KLUE
+DATA_DIR="data/klue_benchmark"
 
 VERSION="v1.1"
 
