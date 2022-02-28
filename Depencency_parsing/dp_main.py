@@ -79,7 +79,7 @@ def add_general_args(parser: argparse.ArgumentParser, root_dir: str) -> argparse
     return parser
 
 
-def make_trainer(
+def make_klue_trainer(
     args: argparse.Namespace,
     extra_callbacks: List = [],
     checkpoint_callback: Optional[pl.Callback] = None,
@@ -96,7 +96,7 @@ def make_trainer(
         logging_callback = LoggingCallback()
 
     # add custom checkpoints
-    metric_key = f"valid/{args.metric_key}"
+    metric_key = f"{args.metric_key}"
     if checkpoint_callback is None:
         filename_for_metric = "{" + metric_key + ":.2f}"
 
@@ -143,7 +143,6 @@ def log_args(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    #command = 'train'#sys.argv[0].lower()
     command = sys.argv[1].lower()
 
     parser = argparse.ArgumentParser(allow_abbrev=False)
@@ -172,7 +171,7 @@ def main() -> None:
     args = parser.parse_args()
     log_args(args)
 
-    trainer = make_trainer(args)
+    trainer = make_klue_trainer(args)
     task.setup(args, command)
 
     if command == Command.Train:
@@ -194,16 +193,7 @@ def main() -> None:
     elif command == Command.Evaluate:
         trainer.test(task.model, test_dataloaders=task.val_loader)
     elif command == Command.Test:
-        save_model_call =task.model.load_frome_checkpoint(
-            model_save_path="C:\\Users\JM shin\KLUE-Baseline\klue_output\klue-dp\\version_6\checkpoint\epoch=03-step=2030=valid\las_macro_f1=87.38.ckpt",
-            hparams_file="C:\\Users\JM shin\KLUE-Baseline\klue_output\klue-dp\\version_6\hparams.yaml",
-            map_location=None,
-        )
-        #trainer.test(task.model, test_dataloaders=task.test_loader)
-        trainer.test(save_model_call, test_dataloaders=task.test_loader)
-        #model_save_path="C:\Users\JM shin\KLUE-Baseline\klue_output\klue-dp\version_6\checkpoint\epoch=03-step=2030=valid\las_macro_f1=87.38.ckpt"
-        #hparams_file="C:\Users\JM shin\KLUE-Baseline\klue_output\klue-dp\version_6\hparams.yaml"
-        #trainer.test(task.model, test_dataloaders=task.test_loader,ckpt_path=model_save_path,)
+        trainer.test(task.model, test_dataloaders=task.test_loader)
 
 
 if __name__ == "__main__":
