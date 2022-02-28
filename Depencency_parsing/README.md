@@ -35,7 +35,7 @@ DATA_DIR="data/klue_benchmark"  # default submodule for data from https://github
 
 VERSION="v1.1"
 
-task="klue-dp"
+task="dp"
 
 OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타내며, DATA_DIR은 학습 및 평가를 위한 데이터의 위치를 나타냅니다.
 
@@ -43,7 +43,7 @@ OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타�
 
 주요 파라미터
 
-model_name_or_path: 학습에 사용될 Huggingface에 배포된 모델의 URL을 URL을 넣어주시면 됩니다. 현재는 klue/roberta-base를 사용하고 있습니다.
+model_name_or_path: 학습에 사용될 Huggingface에 배포된 모델의 URL을 URL을 넣어주시면 됩니다. 현재는 monologg/koelectra-base-v3-discriminator를 사용하고 있습니다.
 
 learning_rate: 모델의 학습률을 지정합니다.
 
@@ -54,18 +54,18 @@ warmup_ratio: 지정한 비율만큼 처음 학습을 시작했을 때, 훨씬 �
 
 - 학습 명령어
 
-python run_klue.py train --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base --learning_rate 3e-5 --num_train_epochs 5 --train_batch_size 16 --eval_batch_size 8 --max_seq_length 510 --gradient_accumulation_steps 2 --warmup_ratio 0.2 --weight_decay 0.01 --max_grad_norm 1.0 --patience 100000 --metric_key slot_micro_f1 --gpus 0 --num_workers 4
+python dp_main.py train --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 4
 
 
 - 평가 명령어
 
-python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 256 --metric_key las_macro_f1 --gpus 0 --num_workers 4
+python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 4
 
 
 
 - 테스트 명령어
 
-python run_klue.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/${task}-${VERSION}  --model_name_or_path klue/roberta-base #--learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 256 --metric_key las_macro_f1 --gpus 0 --num_workers 4
+python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 4
 
 
 ## 학습된 모형 배포
