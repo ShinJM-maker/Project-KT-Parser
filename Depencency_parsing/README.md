@@ -23,6 +23,10 @@ All expereiments are tested under Python 3.7 environment.
 
 DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있습니다. (DPTransformer 클래스)
 
+## 데이터셋
+
+데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
+http://pnuailab.synology.me/sharing/ivl3ZfN6p
 
 
 ## 실행
