@@ -16,6 +16,10 @@ from transformers import AutoModel
 from baseline.data.klue_dp import get_dep_labels, get_pos_labels
 from baseline.models import BaseTransformer, Mode
 
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+import math
+from torch import Tensor
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,10 +59,15 @@ class DPTransformer(BaseTransformer):
             self.pos_embedding = None
         else:
             self.pos_embedding = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
+            self.pos_embedding2 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
+            self.pos_embedding3 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
 
         enc_dim = self.input_size * 2
         if self.pos_embedding is not None:
-            enc_dim += hparams.pos_dim
+            enc_dim += hparams.pos_dim*3
+        self.pos_encoder = PositionalEncoding(d_model=2304, dropout=0.33)
+        self.transformer_model = TransformerModel_Layer(d_model=2304, d_hid=768, nhead=8, nlayers=3,dropout=0.33) #transformer layer 추가,d_model= feature개수
+
 
         self.encoder = nn.LSTM(
             enc_dim,
@@ -91,6 +100,8 @@ class DPTransformer(BaseTransformer):
         bpe_head_mask: torch.Tensor,
         bpe_tail_mask: torch.Tensor,
         pos_ids: torch.Tensor,
+        pos_ids2: torch.Tensor,
+        pos_ids3: torch.Tensor,
         head_ids: torch.Tensor,
         max_word_length: int,
         mask_e: torch.Tensor,
@@ -105,9 +116,18 @@ class DPTransformer(BaseTransformer):
         outputs, sent_len = self.resize_outputs(outputs, bpe_head_mask, bpe_tail_mask, max_word_length)
 
         if self.pos_embedding is not None:
-            pos_outputs = self.pos_embedding(pos_ids)
+            pos_outputs = self.pos_embedding(pos_ids) #맨뒤
+            pos_outputs2 = self.pos_embedding2(pos_ids2) #맨뒤 하나 앞
+            pos_outputs3 = self.pos_embedding3(pos_ids3) #맨앞
             pos_outputs = self.dropout(pos_outputs)
-            outputs = torch.cat([outputs, pos_outputs], dim=2)
+            pos_outputs2 = self.dropout(pos_outputs2)
+            pos_outputs3 = self.dropout(pos_outputs3)
+            outputs = torch.cat([outputs, pos_outputs, pos_outputs2, pos_outputs3], dim=2)
+
+        #print("outputs.size()",outputs.size()) #[16,28,2304]
+
+        """transformer layer 추가"""
+        outputs = self.transformer_model(outputs)
 
         # encoder
         packed_outputs = pack_padded_sequence(outputs, sent_len, batch_first=True, enforce_sorted=False)
@@ -146,7 +166,7 @@ class DPTransformer(BaseTransformer):
     def training_step(self, batch: List[torch.Tensor], batch_idx: int) -> dict:
         input_ids, masks, ids, max_word_length = batch
         attention_mask, bpe_head_mask, bpe_tail_mask, mask_e, mask_d = masks
-        head_ids, type_ids, pos_ids = ids
+        head_ids, type_ids, pos_ids, pos_ids2, pos_ids3 = ids
         inputs = {"input_ids": input_ids, "attention_mask": attention_mask}
 
         batch_size = head_ids.size()[0]
@@ -157,7 +177,7 @@ class DPTransformer(BaseTransformer):
 
         # forward
         out_arc, out_type = self(
-            bpe_head_mask, bpe_tail_mask, pos_ids, head_ids, max_word_length, mask_e, mask_d, batch_index, **inputs
+            bpe_head_mask, bpe_tail_mask, pos_ids, pos_ids2, pos_ids3, head_ids, max_word_length, mask_e, mask_d, batch_index, **inputs
         )
 
         # compute loss
@@ -189,7 +209,7 @@ class DPTransformer(BaseTransformer):
     def validation_step(self, batch: List[torch.Tensor], batch_idx: int, data_type: str = "valid") -> dict:
         input_ids, masks, ids, max_word_length = batch
         attention_mask, bpe_head_mask, bpe_tail_mask, mask_e, mask_d = masks
-        head_ids, type_ids, pos_ids = ids
+        head_ids, type_ids, pos_ids, pos_ids2, pos_ids3 = ids
         inputs = {"input_ids": input_ids, "attention_mask": attention_mask}
 
         batch_index = torch.arange(0, head_ids.size()[0]).long()
@@ -198,6 +218,8 @@ class DPTransformer(BaseTransformer):
             bpe_head_mask,
             bpe_tail_mask,
             pos_ids,
+            pos_ids2,
+            pos_ids3,
             head_ids,
             max_word_length,
             mask_e,
@@ -356,6 +378,7 @@ class BiAttention(nn.Module):
         self.W_e = Parameter(torch.Tensor(self.num_labels, self.input_size_encoder))
         self.W_d = Parameter(torch.Tensor(self.num_labels, self.input_size_decoder))
         self.b = Parameter(torch.Tensor(self.num_labels, 1, 1))
+        #self.d = Parameter(torch.Tensor(self.input_size_encoder, self.input_size_decoder)) #어절간 상대거리
         if self.biaffine:
             self.U = Parameter(torch.Tensor(self.num_labels, self.input_size_decoder, self.input_size_encoder))
         else:
@@ -367,6 +390,7 @@ class BiAttention(nn.Module):
         nn.init.xavier_uniform_(self.W_e)
         nn.init.xavier_uniform_(self.W_d)
         nn.init.constant_(self.b, 0.0)
+        #nn.init.constant_(self.d, 0.0) #1.31 중민 추가
         if self.biaffine:
             nn.init.xavier_uniform_(self.U)
 
@@ -385,14 +409,30 @@ class BiAttention(nn.Module):
         out_e = torch.matmul(self.W_e, input_e.transpose(1, 2)).unsqueeze(2)
 
         if self.biaffine:
-            output = torch.matmul(input_d.unsqueeze(1), self.U)
-            output = torch.matmul(output, input_e.unsqueeze(1).transpose(2, 3))
-            output = output + out_d + out_e + self.b
+            #print("input_d.size",input_d.size()) #[64,39,512]
+            #print("U.size",self.U.size()) #[1,512,512]
+            output = torch.matmul(input_d.unsqueeze(1), self.U) #[64, 1, 39, 512], [1,512,512] -> [64,1,39,512]
+            #print("output1.size()",output.size()) #[64,1,39,512]
+            #print("input_e.size()", input_e.size()) #[64,40,512]
+            #print("input_e_transpose:",input_e.unsqueeze(1).transpose(2, 3).size()) #[64,1,512,40]
+            output = torch.matmul(output, input_e.unsqueeze(1).transpose(2, 3)) #[64,1,39,512], [64,1,512,40] -> [64, 1, 39, 40]
+            output = output + out_d + out_e + self.b# + self.d #1.31 중민 추가
+            #print("outputsize before:",output.size()) #[64, 1, 39, 40]
         else:
-            output = out_d + out_d + self.b
-
+            output = out_d + out_d + self.b# + self.d #1.31 중민 추가
+        #print("d.size():",self.d.size()) #[512, 512]
         if mask_d is not None:
-            output = output * mask_d.unsqueeze(1).unsqueeze(3) * mask_e.unsqueeze(1).unsqueeze(2)
+            output = output * mask_d.unsqueeze(1).unsqueeze(3) * mask_e.unsqueeze(1).unsqueeze(2) #[64, 1, 39, 40]*[64, 1, 39, 1]*[64, 1, 1, 40]-> [64, 1, 39, 40]
+            #print("outputsize after:",output.size()) #[64, 1, 39, 40]
+            #a=mask_d.unsqueeze(1).unsqueeze(3)
+            #b=mask_e.unsqueeze(1).unsqueeze(2)
+            #print("mask_d.size():",mask_d.size()) #[64, 39]
+            #print("mask_e.size():", mask_e.size()) #[64, 40]
+            #print("a.size():",a.size()) #[64, 1, 39, 1]
+            #print("b.size():", b.size()) #[64, 1, 1, 40]
+            #output = torch.matmul(output,self.d.unsqueeze(0)) #[64, 1, 39, 40], [512,512]
+            #print("matmul output:",output.size())
+            #output = output * mask_d.unsqueeze(1).unsqueeze(3) * mask_e.unsqueeze(1).unsqueeze(2) * self.d #1.31 중민 추가
 
         return output
 
@@ -432,3 +472,60 @@ class BiLinear(nn.Module):
         output = F.bilinear(input_left, input_right, self.U, self.bias)
         output = output + F.linear(input_left, self.W_l, None) + F.linear(input_right, self.W_r, None)
         return output.view(left_size[:-1] + (self.out_features,))
+
+class TransformerModel_Layer(nn.Module):
+
+    def __init__(self, d_model: int, nhead: int, d_hid: int,
+                 nlayers: int, dropout: float = 0.33):
+        super().__init__()
+        self.model_type = 'Transformer'
+        #self.pos_encoder = PositionalEncoding(d_model, dropout)
+        encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
+        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
+        #self.encoder = nn.Embedding(ntoken, d_model)
+        #self.d_model = d_model
+        #self.decoder = nn.Linear(d_model, ntoken)
+
+        #self.init_weights()
+
+    def init_weights(self) -> None:
+        initrange = 0.1
+        self.encoder.weight.data.uniform_(-initrange, initrange)
+        #self.decoder.bias.data.zero_()
+        #self.decoder.weight.data.uniform_(-initrange, initrange)
+
+    def forward(self, src: Tensor) -> Tensor:
+        """
+        Args:
+            src: Tensor, shape [seq_len, batch_size]
+            src_mask: Tensor, shape [seq_len, seq_len]
+
+        Returns:
+            output Tensor of shape [seq_len, batch_size, ntoken]
+        """
+        #src = self.encoder(src) * math.sqrt(self.d_model)
+        #src = self.pos_encoder(src)
+        output = self.transformer_encoder(src)
+        #output = self.decoder(output)
+        return output
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe = torch.zeros(max_len, 1, d_model)
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Args:
+            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+        """
+        x = x + self.pe[:x.size(0)]
+        return self.dropout(x)

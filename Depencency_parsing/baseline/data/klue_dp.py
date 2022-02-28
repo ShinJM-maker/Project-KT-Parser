@@ -11,8 +11,16 @@ from transformers import PreTrainedTokenizer
 
 from baseline.data.base import DataProcessor, KlueDataModule
 
-logger = logging.getLogger(__name__)
+import re
 
+logger = logging.getLogger(__name__)
+max_seq_length2=510
+
+p1=re.compile("를$")
+p2=re.compile("가$")
+p3=re.compile("는$")
+p4=re.compile("과$")
+p5=re.compile("에게는$")
 
 class KlueDPInputExample:
     """A single training/test example for Dependency Parsing in .conllu format
@@ -28,7 +36,7 @@ class KlueDPInputExample:
     """
 
     def __init__(
-        self, guid: str, text: str, sent_id: int, token_id: int, token: str, pos: str, head: str, dep: str
+        self, guid: str, text: str, sent_id: int, token_id: int, token: str, pos: str, pos2: str, pos3: str, head: str, dep: str
     ) -> None:
         self.guid = guid
         self.text = text
@@ -36,6 +44,8 @@ class KlueDPInputExample:
         self.token_id = token_id
         self.token = token
         self.pos = pos
+        self.pos2 = pos2
+        self.pos3 = pos3
         self.head = head
         self.dep = dep
 
@@ -64,6 +74,8 @@ class KlueDPInputFeatures:
         head_ids: List[int],
         dep_ids: List[int],
         pos_ids: List[int],
+        pos_ids2: List[int],
+        pos_ids3: List[int],
     ) -> None:
         self.guid = guid
         self.input_ids = ids
@@ -73,6 +85,8 @@ class KlueDPInputFeatures:
         self.head_ids = head_ids
         self.dep_ids = dep_ids
         self.pos_ids = pos_ids
+        self.pos_ids2 = pos_ids2
+        self.pos_ids3 = pos_ids3
 
 
 class KlueDPDataModule(pl.LightningDataModule):
@@ -172,6 +186,23 @@ class KlueDPProcessor(DataProcessor):
                         guid = parsed[0].replace("##", "").strip()
                 else:
                     token_list = [token.replace("\n", "") for token in line.split("\t")] + ["-", "-"]
+                    #print(token_list[3])
+
+
+                    p11 = p1.search(token_list[1])
+                    p22 = p2.search(token_list[1])
+                    p33 = p3.search(token_list[1])
+                    p44 = p4.search(token_list[1])
+                    
+                    if p11 != None:
+                        token_list[1]=token_list[1][:p11.span()[0]] + "을"
+                    elif p22 != None:
+                        token_list[1]=token_list[1][:p22.span()[0]] + "이"
+                    elif p33 != None:
+                        token_list[1]=token_list[1][:p33.span()[0]] + "은"
+                    elif p44 != None:
+                        token_list[1]=token_list[1][:p44.span()[0]] + "와"
+
                     examples.append(
                         KlueDPInputExample(
                             guid=guid,
@@ -180,10 +211,13 @@ class KlueDPProcessor(DataProcessor):
                             token_id=int(token_list[0]),
                             token=token_list[1],
                             pos=token_list[3],
+                            pos2=token_list[3],
+                            pos3=token_list[3],
                             head=token_list[4],
                             dep=token_list[5],
                         )
                     )
+
         return examples
 
     def convert_examples_to_features(
@@ -197,16 +231,21 @@ class KlueDPProcessor(DataProcessor):
 
         pos_label_map = {label: i for i, label in enumerate(pos_label_list)}
         dep_label_map = {label: i for i, label in enumerate(dep_label_list)}
-
+        #print(pos_label_map)
         SENT_ID = 0
 
         token_list: List[str] = []
         pos_list: List[str] = []
+        pos_list2: List[str] = []
+        pos_list3: List[str] = []
         head_list: List[int] = []
         dep_list: List[str] = []
 
         features = []
+        #print(max_length,type(max_length))
         for example in examples:
+            #print(example.sent_id)
+            #print(SENT_ID)
             if SENT_ID != example.sent_id:
                 SENT_ID = example.sent_id
                 encoded = tokenizer.encode_plus(
@@ -225,8 +264,11 @@ class KlueDPProcessor(DataProcessor):
                 head_ids = [-1]
                 dep_ids = [-1]
                 pos_ids = [-1]  # --> CLS token
+                pos_ids2 = [-1]
+                pos_ids3 = [-1]
+                #print("pos_list:", pos_list)
 
-                for token, head, dep, pos in zip(token_list, head_list, dep_list, pos_list):
+                for token, head, dep, pos, pos2, pos3 in zip(token_list, head_list, dep_list, pos_list, pos_list2, pos_list3):
                     bpe_len = len(tokenizer.tokenize(token))
                     head_token_mask = [1] + [0] * (bpe_len - 1)
                     tail_token_mask = [0] * (bpe_len - 1) + [1]
@@ -238,26 +280,37 @@ class KlueDPProcessor(DataProcessor):
                     dep_mask = [dep_label_map[dep]] + [-1] * (bpe_len - 1)
                     dep_ids.extend(dep_mask)
                     pos_mask = [pos_label_map[pos]] + [-1] * (bpe_len - 1)
+                    pos_mask2 = [pos_label_map[pos2]] + [-1] * (bpe_len - 1)
+                    pos_mask3 = [pos_label_map[pos3]] + [-1] * (bpe_len - 1)
                     pos_ids.extend(pos_mask)
+                    pos_ids2.extend(pos_mask2)
+                    pos_ids3.extend(pos_mask3)
+                    #print("pos_ids:",pos_ids)
+                    #print("pos_ids2:", pos_ids2)
 
                 bpe_head_mask.append(0)
                 bpe_tail_mask.append(0)
                 head_ids.append(-1)
                 dep_ids.append(-1)
                 pos_ids.append(-1)  # END token
+                pos_ids2.append(-1)  # END token
+                pos_ids3.append(-1)  # END token
                 if len(bpe_head_mask) > max_length:
                     bpe_head_mask = bpe_head_mask[:max_length]
                     bpe_tail_mask = bpe_tail_mask[:max_length]
                     head_ids = head_ids[:max_length]
                     dep_ids = dep_ids[:max_length]
                     pos_ids = pos_ids[:max_length]
-
+                    pos_ids2 = pos_ids2[:max_length]
+                    pos_ids3 = pos_ids3[:max_length]
                 else:
                     bpe_head_mask.extend([0] * (max_length - len(bpe_head_mask)))  # padding by max_len
                     bpe_tail_mask.extend([0] * (max_length - len(bpe_tail_mask)))  # padding by max_len
                     head_ids.extend([-1] * (max_length - len(head_ids)))  # padding by max_len
                     dep_ids.extend([-1] * (max_length - len(dep_ids)))  # padding by max_len
                     pos_ids.extend([-1] * (max_length - len(pos_ids)))
+                    pos_ids2.extend([-1] * (max_length - len(pos_ids2)))
+                    pos_ids3.extend([-1] * (max_length - len(pos_ids3)))
 
                 feature = KlueDPInputFeatures(
                     guid=example.guid,
@@ -268,24 +321,45 @@ class KlueDPProcessor(DataProcessor):
                     head_ids=head_ids,
                     dep_ids=dep_ids,
                     pos_ids=pos_ids,
+                    pos_ids2=pos_ids2,
+                    pos_ids3=pos_ids3,
                 )
                 features.append(feature)
 
                 token_list = []
                 pos_list = []
+                pos_list2 = []
+                pos_list3 = []
                 head_list = []
                 dep_list = []
 
             token_list.append(example.token)
-            pos_list.append(example.pos.split("+")[-1])  # 맨 뒤 pos정보만 사용
+
+            if p5.search(example.token) != None: #에게 는 : [-1] -> [-2] 참조
+                pos_list.append(example.pos.split("+")[-2]) # 맨 뒤 바로앞 pos정보 사용
+                pos_list2.append(example.pos2.split("+")[0])
+                pos_list3.append("0")  # Null
+            else:
+                pos_list.append(example.pos.split("+")[-1])  # 맨 뒤 pos정보만 사용
+                if len(example.pos2.split("+")) > 2:
+                    pos_list2.append(example.pos2.split("+")[-2])  # 맨 뒤 바로앞 pos정보 사용
+                    pos_list3.append(example.pos3.split("+")[0])  # 맨 앞 pos정보 사용
+                elif len(example.pos2.split("+")) ==2:
+                    pos_list2.append(example.pos2.split("+")[0])  # 맨 뒤 바로앞 pos정보 사용
+                    pos_list3.append("0") # Null
+                elif len(example.pos2.split("+")) == 1:
+                    pos_list2.append("0")  # Null
+                    pos_list3.append("0")  # Null
             head_list.append(int(example.head))
             dep_list.append(example.dep)
-
+        #print("pos_list:",pos_list)
+        #print("pos_list2:", pos_list2)
+        #print(" ".join(token_list))
         encoded = tokenizer.encode_plus(
             " ".join(token_list),
             None,
             add_special_tokens=True,
-            max_length=max_length,
+            max_length=int(max_length),
             truncation=True,
             padding="max_length",
         )
@@ -297,8 +371,10 @@ class KlueDPProcessor(DataProcessor):
         head_ids = [-1]
         dep_ids = [-1]
         pos_ids = [-1]  # --> CLS token
+        pos_ids2 = [-1]
+        pos_ids3 = [-1]
 
-        for token, head, dep, pos in zip(token_list, head_list, dep_list, pos_list):
+        for token, head, dep, pos, pos2, pos3 in zip(token_list, head_list, dep_list, pos_list, pos_list2, pos_list3):
             bpe_len = len(tokenizer.tokenize(token))
             head_token_mask = [1] + [0] * (bpe_len - 1)
             tail_token_mask = [0] * (bpe_len - 1) + [1]
@@ -310,7 +386,13 @@ class KlueDPProcessor(DataProcessor):
             dep_mask = [dep_label_map[dep]] + [-1] * (bpe_len - 1)
             dep_ids.extend(dep_mask)
             pos_mask = [pos_label_map[pos]] + [-1] * (bpe_len - 1)
+            pos_mask2 = [pos_label_map[pos2]] + [-1] * (bpe_len - 1)
+            pos_mask3 = [pos_label_map[pos3]] + [-1] * (bpe_len - 1)
             pos_ids.extend(pos_mask)
+            pos_ids2.extend(pos_mask2)
+            pos_ids3.extend(pos_mask3)
+            #print("pos_ids:", pos_ids)
+            #print("pos_ids2:", pos_ids2)
 
         bpe_head_mask.append(0)
         bpe_tail_mask.append(0)
@@ -321,7 +403,10 @@ class KlueDPProcessor(DataProcessor):
         head_ids.extend([-1] * (max_length - len(head_ids)))  # padding by max_len
         dep_ids.extend([-1] * (max_length - len(dep_ids)))  # padding by max_len
         pos_ids.extend([-1] * (max_length - len(pos_ids)))
-
+        pos_ids2.extend([-1] * (max_length - len(pos_ids2)))
+        pos_ids3.extend([-1] * (max_length - len(pos_ids3)))
+        #print(pos_ids)
+        #print(pos_ids2)
         feature = KlueDPInputFeatures(
             guid=example.guid,
             ids=ids,
@@ -331,30 +416,21 @@ class KlueDPProcessor(DataProcessor):
             head_ids=head_ids,
             dep_ids=dep_ids,
             pos_ids=pos_ids,
+            pos_ids2=pos_ids2,
+            pos_ids3=pos_ids3,
         )
         features.append(feature)
-
-        for feature in features[:3]:
-            logger.info("*** Example ***")
-            logger.info("input_ids: %s" % feature.input_ids)
-            logger.info("attention_mask: %s" % feature.attention_mask)
-            logger.info("bpe_head_mask: %s" % feature.bpe_head_mask)
-            logger.info("bpe_tail_mask: %s" % feature.bpe_tail_mask)
-            logger.info("head_id: %s" % feature.head_ids)
-            logger.info("dep_ids: %s" % feature.dep_ids)
-            logger.info("pos_ids: %s" % feature.pos_ids)
-
         return features
-
     def _convert_features(self, examples: List[KlueDPInputExample]) -> List[KlueDPInputFeatures]:
         return self.convert_examples_to_features(
             examples,
             self.tokenizer,
-            max_length=self.hparams.max_seq_length,
+            max_length= max_seq_length2,
             dep_label_list=get_dep_labels(),
             pos_label_list=get_pos_labels(),
         )
 
+    # self.hparams.max_seq_length,
     def _create_dataset(self, file_path: str, dataset_type: str) -> TensorDataset:
         examples = self._create_examples(file_path, dataset_type)
         features = self._convert_features(examples)
@@ -366,6 +442,8 @@ class KlueDPProcessor(DataProcessor):
         all_head_ids = torch.tensor([f.head_ids for f in features], dtype=torch.long)
         all_dep_ids = torch.tensor([f.dep_ids for f in features], dtype=torch.long)
         all_pos_ids = torch.tensor([f.pos_ids for f in features], dtype=torch.long)
+        all_pos_ids2 = torch.tensor([f.pos_ids2 for f in features], dtype=torch.long)
+        all_pos_ids3 = torch.tensor([f.pos_ids3 for f in features], dtype=torch.long)
 
         return TensorDataset(
             all_input_ids,
@@ -375,6 +453,8 @@ class KlueDPProcessor(DataProcessor):
             all_head_ids,
             all_dep_ids,
             all_pos_ids,
+            all_pos_ids2,
+            all_pos_ids3,
         )
 
     @overrides
@@ -410,6 +490,8 @@ class KlueDPProcessor(DataProcessor):
         # 1. set args
         batch_size = len(batch)
         pos_padding_idx = None if self.hparams.no_pos else len(get_pos_labels())
+        pos_padding_idx2 = None if self.hparams.no_pos else len(get_pos_labels())
+        pos_padding_idx3 = None if self.hparams.no_pos else len(get_pos_labels())
         # 2. build inputs : input_ids, attention_mask, bpe_head_mask, bpe_tail_mask
         batch_input_ids = []
         batch_attention_masks = []
@@ -421,6 +503,8 @@ class KlueDPProcessor(DataProcessor):
                 attention_mask,
                 bpe_head_mask,
                 bpe_tail_mask,
+                _,
+                _,
                 _,
                 _,
                 _,
@@ -443,6 +527,8 @@ class KlueDPProcessor(DataProcessor):
         head_ids = torch.zeros(batch_size, max_word_length).long()
         type_ids = torch.zeros(batch_size, max_word_length).long()
         pos_ids = torch.zeros(batch_size, max_word_length + 1).long()
+        pos_ids2 = torch.zeros(batch_size, max_word_length + 1).long()
+        pos_ids3 = torch.zeros(batch_size, max_word_length + 1).long()
         mask_e = torch.zeros(batch_size, max_word_length + 1).long()
         # 3. token_to_words : head_ids, type_ids, pos_ids, mask_e, mask_d
         for batch_id in range(batch_size):
@@ -454,6 +540,8 @@ class KlueDPProcessor(DataProcessor):
                 token_head_ids,
                 token_type_ids,
                 token_pos_ids,
+                token_pos_ids2,
+                token_pos_ids3,
             ) = batch[batch_id]
             # head_id : [1, 3, 5] (prediction candidates)
             # token_head_ids : [-1, 3, -1, 3, -1, 0, -1, -1, -1, .-1, ...] (ground truth head ids)
@@ -466,11 +554,19 @@ class KlueDPProcessor(DataProcessor):
                 pos_ids[batch_id][0] = torch.tensor(pos_padding_idx)
                 pos_ids[batch_id][1:] = token_pos_ids[head_id]
                 pos_ids[batch_id][int(torch.sum(bpe_head_mask)) + 1 :] = torch.tensor(pos_padding_idx)
+
+                pos_ids2[batch_id][0] = torch.tensor(pos_padding_idx2)
+                pos_ids2[batch_id][1:] = token_pos_ids2[head_id]
+                pos_ids2[batch_id][int(torch.sum(bpe_head_mask)) + 1 :] = torch.tensor(pos_padding_idx2)
+
+                pos_ids3[batch_id][0] = torch.tensor(pos_padding_idx3)
+                pos_ids3[batch_id][1:] = token_pos_ids3[head_id]
+                pos_ids3[batch_id][int(torch.sum(bpe_head_mask)) + 1:] = torch.tensor(pos_padding_idx3)
             mask_e[batch_id] = torch.LongTensor([1] * (word_length + 1) + [0] * (max_word_length - word_length))
         mask_d = mask_e[:, 1:]
         # 4. pack everything
         masks = (attention_masks, bpe_head_masks, bpe_tail_masks, mask_e, mask_d)
-        ids = (head_ids, type_ids, pos_ids)
+        ids = (head_ids, type_ids, pos_ids, pos_ids2, pos_ids3)
 
         return input_ids, masks, ids, max_word_length
 
@@ -506,6 +602,10 @@ def get_dep_labels() -> List[str]:
         "NP_MOD",
         "VNP",
         "DP",
+        "DP_AJT", #DP_AJT~DP_CMP 1.22 중민 추가
+        "DP_MOD",
+        "DP_SBJ",
+        "DP_CMP",
         "VP_AJT",
         "VNP_MOD",
         "NP_CMP",
@@ -518,6 +618,12 @@ def get_dep_labels() -> List[str]:
         "VP_CNJ",
         "VNP_AJT",
         "IP",
+        "IP_CMP", #IP_CMP~IP_OBJ 1.22 중민 추가
+        "IP_AJT",
+        "IP_SBJ",
+        "IP_CNJ",
+        "IP_MOD",
+        "IP_OBJ",
         "X",
         "X_SBJ",
         "VNP_OBJ",
@@ -533,8 +639,9 @@ def get_dep_labels() -> List[str]:
         "AP_SBJ",
         "R",
         "NP_SVJ",
-        #"AP_OBJ", #22.01.11 중민 추가
-        #"AP_CNJ",  # 22.01.11 중민 추가
+        "AP_OBJ", #22.01.11 중민 추가
+        "AP_CNJ",  # 22.01.11 중민 추가
+        "L_MOD", #이부분 나중에 데이터셋에서 없에든지 해야
     ]
     return dep_labels
 
@@ -543,6 +650,7 @@ def get_pos_labels() -> List[str]:
     """label for part-of-speech tags"""
 
     return [
+        "0",
         "NNG",
         "NNP",
         "NNB",
@@ -588,5 +696,6 @@ def get_pos_labels() -> List[str]:
         "SW",
         "SN",
         "NA",
-        "0", #key error방지를 위해 추가
+        "NF", #중민 추가
+        "NV",
     ]

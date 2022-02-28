@@ -39,7 +39,8 @@ def klue_dp_uas_micro_f1(preds: List[List[DPResult]], labels: List[List[DPResult
     index = [i for i, label in enumerate(head_labels) if label == -1]
     head_preds = np.delete(head_preds, index)
     head_labels = np.delete(head_labels, index)
-    return sklearn.metrics.f1_score(head_labels.tolist(), head_preds.tolist(), average="micro") * 100.0
+    #return sklearn.metrics.f1_score(head_labels.tolist(), head_preds.tolist(), average="micro") * 100.0
+    return sklearn.metrics.accuracy_score(head_labels.tolist(), head_preds.tolist()) * 100.0
 
 
 def klue_dp_las_macro_f1(preds: List[List[DPResult]], labels: List[List[DPResult]]) -> Any:
@@ -120,4 +121,5 @@ def klue_dp_las_micro_f1(preds: List[List[DPResult]], labels: List[List[DPResult
     uas_incorrect = np.nonzero(np.invert(uas_correct))
     for idx in uas_incorrect:
         type_preds[idx] = PAD
-    return sklearn.metrics.f1_score(type_labels.tolist(), type_preds.tolist(), average="micro") * 100.0
+    #return sklearn.metrics.f1_score(type_labels.tolist(), type_preds.tolist(), average="micro") * 100.0
+    return sklearn.metrics.accuracy_score(type_labels.tolist(), type_preds.tolist()) * 100.0

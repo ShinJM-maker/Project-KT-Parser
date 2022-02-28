@@ -69,6 +69,8 @@ class KlueTask:
             self.val_loader = datamodule.val_dataloader()
         elif command == Command.Test:
             self.test_loader = datamodule.test_dataloader()
+        elif command == Command.Predict:
+            self.test_loader = datamodule.test_dataloader()
 
     def to_dict(self) -> dict:
         return {

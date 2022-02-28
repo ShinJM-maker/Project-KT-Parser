@@ -6,7 +6,8 @@ class Command:
     Train = "train"
     Evaluate = "evaluate"
     Test = "test"
+    Predict = "predict"
 
     @staticmethod
     def tolist() -> List[str]:
-        return [Command.Train, Command.Evaluate, Command.Test]
+        return [Command.Train, Command.Evaluate, Command.Test, Command.Predict]
