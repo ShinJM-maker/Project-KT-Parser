@@ -58,7 +58,7 @@ class DPTransformer(BaseTransformer):
             self.pos_embedding = None
             self.pos_embedding2 = None
             self.pos_embedding3 = None
-            self.pos_embedding4 = None
+            #self.pos_embedding4 = None
         else:
             self.pos_embedding = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
             self.pos_embedding2 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
@@ -66,14 +66,16 @@ class DPTransformer(BaseTransformer):
             #self.pos_embedding4 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
 
         #self.pos34 = nn.Linear(512, 256)
-        self.pos_concat = nn.Linear(768, 256)
+        #self.pos_concat = nn.Linear(768, 256)
 
         enc_dim = self.input_size * 2
         if self.pos_embedding is not None:
             # enc_dim += hparams.pos_dim*3
-            enc_dim += hparams.pos_dim
+            enc_dim += hparams.pos_dim*3
         # self.pos_encoder = PositionalEncoding(d_model=2560, dropout=0.33)
-        self.transformer_model = TransformerModel_Layer(d_model=1792, d_hid=768, nhead=8, nlayers=3,
+        #self.transformer_model = TransformerModel_Layer(d_model=1792, d_hid=768, nhead=8, nlayers=3,
+        #                                                dropout=0.33)  # transformer layer 추가,d_model= feature개수
+        self.transformer_model = TransformerModel_Layer(d_model=2304, d_hid=768, nhead=8, nlayers=3,
                                                         dropout=0.33)  # transformer layer 추가,d_model= feature개수
 
         self.encoder = nn.LSTM(
@@ -153,10 +155,10 @@ class DPTransformer(BaseTransformer):
             # pos_outputs1234_2 = self.pos34(pos_outputs1234)
 
             pos_concat = torch.cat([pos_outputs, pos_outputs2, pos_outputs3], dim=2)
-            pos_outputs_concat = self.pos_concat(pos_concat)
+            #pos_outputs_concat = self.pos_concat(pos_concat)
 
             # outputs = torch.cat([outputs, pos_outputs1234_2], dim=2)
-            outputs = torch.cat([outputs, pos_outputs_concat], dim=2)
+            outputs = torch.cat([outputs, pos_concat], dim=2)
 
             # outputs = torch.cat([outputs, pos_outputs, pos_outputs2, pos_outputs3], dim=2)
 
@@ -279,37 +281,7 @@ class DPTransformer(BaseTransformer):
         #                    range(out_arc.size()[0])]
         #regulation_EC = [[[int(1) for i in range(out_arc.size()[2])] for j in range(out_arc.size()[1])] for k in
         #                    range(out_arc.size()[0])]
-        """
-        for i in range(pos_ids4.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
-            for j in range(pos_ids4.size()[1]):  # 입력어절 판별
-                
-                if pos_ids4[i][j].item() == 3:  # 어서
-                    if pos_ids[i][j].item() == 36 or pos_ids2[i][j] == 36:  # EC
-                        # print(pos_ids4[i][j])
-                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
-                            if pos_ids3[i][k] == 10 or pos_ids3[i][k] == 11: # or pos_ids3[i][k] == 12 or pos_ids3[i][
-                                #k] == 13:  # NNP, NNB
-                                if out_arc[i][j - 1][k].item() > 0:
-                                    regulation_Eoseo[i][j - 1][k] = 0
-                                # print(pos_ids3[i][k]) #여기 pos_ids3==0 and pos_ids2[i][k]==10,11 추가
-                            elif pos_ids2[i][k] == 0:
-                                if pos_ids[i][k] == 10 or pos_ids[i][k] == 11: #or pos_ids[i][k] == 12 or pos_ids[i][
-                                    #k] == 13:
-                                    if out_arc[i][j - 1][k].item() > 0:
-                                        regulation_Eoseo[i][j - 1][k] = 0
-        """
-        """
-                if pos_ids5[i][j].item() == 1: #고
-                    #print("pos_ids[i][j].item():",pos_ids[i][j].item())
-                    if pos_ids[i][j].item() == 36:
-                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
-                            #if pos_ids3[i][k] == 10 or pos_ids3[i][k] == 11 or pos_ids3[i][k] == 12 or pos_ids3[i][
-                            if pos_ids3[i][k] == 12 or pos_ids3[i][k] == 13:  # NNP, NNB
-                                # print(pos_ids4[i][j])
-                                # if out_arc[i][j - 1][k].item() > 0:
-                                if out_arc[i][j - 1][k].item() > 0:
-                                    regulation_Eoseo[i][j - 1][k] = 0
-                """
+
         #num1=0
         #num2=0
         #num3=0
@@ -317,59 +289,10 @@ class DPTransformer(BaseTransformer):
         last_Eojeol=[]
         #last_Eojeol.append(0)
         #print(pos_ids.size())
-        for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
-            for j in range(pos_ids3.size()[1]):  # 입력어절 판별
-                if j!=0 and pos_ids[i][j].item()==56:
-                    last_Eojeol.append(j-1)
-                    #print(i)
-                    break
-                elif j==(pos_ids3.size()[1]-1):
-                    last_Eojeol.append(j-1)
-                    #print(j-1)
-                    #print(i)
-                    break
+
         #print("last_Eojeol:",last_Eojeol) #batch, Eojeol -> 각 문장 별 last_Eojeol_index
         #print("len(last_Eojeol):",len(last_Eojeol))
-        """
-        for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
-            for j in range(pos_ids3.size()[1]):  # 입력어절 판별
 
-                if pos_ids2[i][j].item() == 14 or pos_ids2[i][j].item() == 4 or pos_ids2[i][j].item() == 5 or \
-                        pos_ids2[i][j].item() == 6 or pos_ids2[i][j] == 15:  # VV, 자, 타, 자타, 형용사
-                    # print("pos_ids2[i]:",pos_ids2[i])
-                    if pos_ids[i][j].item() == 36:  # EC : VV+EC
-                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
-                            if pos_ids3[i][k].item() == 16:  # VX+pos2+pos
-                                # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
-                                # num1=num1+1
-                                if not k == j + 1 and k > j and not k == 0 and not j == 0:  # j k 10 11 10 12, j-1 =10 k>=12 10 12
-                                    # num2=num2+1
-                                    if out_arc[i][j - 1][k].item() > 0:
-                                        # regulation_Eoseo[i][j - 1][k] = 0
-                                        out_arc[i][j - 1][k] = 0
-                            elif pos_ids3[i][k].item() == 0 and pos_ids2[i][k].item() == 16:  # VX+pos:
-                                # num3=num3+1
-                                if not k == j + 1 and k > j and not k == 0 and not j == 0:  # and not
-                                    # num4=num4+1
-                                    # print(pos_ids2[i][k],pos_ids[i][k])
-                                    if out_arc[i][j - 1][k].item() > 0:
-                                        # regulation_Eoseo[i][j - 1][k] = 0
-                                        out_arc[i][j - 1][k]
-                if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
-                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
-                        # if i != 0 and j != 0 and last_Eojeol[i] == k:  # 마지막 어절 index
-                        #    print("i,j:", i, j)
-                        #    print("pos_ids[i][j].item():", pos_ids[i][j].item())
-                        #    print("pos_ids[i][j+1].item():", pos_ids[i][j + 1].item())
-                        if pos_ids5[i][k].item() == 2 or pos_ids5[i][k].item() == 3 or pos_ids5[i][k].item() == 4:  ##VV,VA,VX 있,없 #[k-1]==JKB or 동작성명사 예외처리 해야할 것
-                            if k > j and not k == j + 1 and not j == 0:  # and k < last_Eojeol[i]:#and not pos_ids[i][k].item() != 56 and not k!=last_Eojeol[i]:
-                                # if pos_ids5[i][k].item()==2: #VV,VA,VX 있,없 #[k-1]==JKB or 동작성명사 예외처리 해야할 것
-                                # print(i,j,k)
-                                # print(pos_ids)
-                                if out_arc[i][j - 1][k].item() > 0:
-                                    # regulation_Eoseo[i][j - 1][k] = 0
-                                    out_arc[i][j - 1][k] = 0
-                                    """
         for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
             for j in range(pos_ids3.size()[1]):  # 입력어절 판별
                 #if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
