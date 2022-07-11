@@ -395,7 +395,7 @@ class KlueDPProcessor(DataProcessor):
         pos_label_map = {label: i for i, label in enumerate(pos_label_list)}
         dep_label_map = {label: i for i, label in enumerate(dep_label_list)}
         classification_label_map = {label: i for i, label in enumerate(classification_label_list)}
-        DP_POS = ["VV", "VA", "VX", "XSV", "XSA", "VCP", "JKQ", "자동사", "타동사","자타동사"]
+        DP_POS = ["VV", "VA", "VX", "VCN", "EP", "EF", "EC", "ETN", "XSV", "XSA", "NV", "VCP","JKQ", "자동사", "타동사","자타동사"]
         NNB_VX = ["것", "터", "뿐", "따름", "모양", "지경", "참", "수", "리", "만하다", "법하다", "듯하다", "걸", "말", "노릇", "예정", "길"]
         # print(pos_label_map)
         SENT_ID = 0
@@ -572,18 +572,11 @@ class KlueDPProcessor(DataProcessor):
             HassDa = re.compile("했다.")
             # if temp_pos[0]=="동작성명사" or temp_pos[0]=="상태성명사":
             # pos_list5.append("NOT-VP")
-            if ("VV" in temp_pos) or ("VA" in temp_pos) or ("VX" in temp_pos):
-                if ("있다" in example.token) or ("없다" in example.token):  # or ("있다" in example.token)
-                    pos_list5.append("VV-VA-VX-있없다")
-                elif HassDa.match(sentence_list[-1]) and ("VV" in temp_pos):
-                    pos_list5.append("VV-VX-했다")
-                elif ("했다" in example.token) and ("VX" in temp_pos):
-                    pos_list5.append("VV-VX-했다")
-                else:
-                    pos_list5.append("0")
+            if len(temp_pos2)==0 and not temp_pos[0]=="NNB" and not "\"" in example.token and not "," in example.token and not example.token[-1]=="로" and not "SE" in example.pos3 and not "동작성명사" in example.pos4:
+                pos_list5.append("NOT-VP")
             elif (temp_pos[0]=="NNB" and len(temp_pos3)!=0) and not "”" in example.token and not "\"" in example.token:
                 pos_list5.append("NNB-VX") #나중에 중이다 추가해보기 3-28
-            elif (temp_pos[0] == "NNB" and example.token[0] == "중") and not "”" in example.token and not "\"" in example.token:
+            elif (temp_pos[0]=="NNB" and example.token[0] == "중") and not "\"" in example.token:
                 pos_list5.append("NNB-VX(중)")
                 #print(example.token)
             #elif "\"" in example.token and not int(ids[j]) >= (Inyong_start[0] + 1) :#and not int(ids[j]) + 1 == int(index): #입력어절이 인용어절보다 앞에있을경우, 두번째 "일경우
@@ -594,10 +587,12 @@ class KlueDPProcessor(DataProcessor):
                     #print(example.token)
                 elif example.token[-1] == "며" and "다" not in example.token:
                     pos_list5.append("인용끝")
-                else:
+                else: #이거 example.token[-1] == "며" 만으로 조건 고쳐야 할 지 고민
                     pos_list5.append("인용시작")
                     #print(example.token)
                 #print(example.token)
+            elif len(temp_pos2)!=0:
+                pos_list5.append("VP")
             else:
                 pos_list5.append("0")
 
@@ -1100,5 +1095,5 @@ def get_classification_labels() -> List[str]:
         "인용시작",
         "인용끝",
         "NNB-VX(중)",
-        #"VP",
+        "VP",
    ]
