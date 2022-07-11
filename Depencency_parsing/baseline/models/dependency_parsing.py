@@ -58,23 +58,21 @@ class DPTransformer(BaseTransformer):
             self.pos_embedding = None
             self.pos_embedding2 = None
             self.pos_embedding3 = None
-            #self.pos_embedding4 = None
+            self.pos_embedding4 = None
         else:
             self.pos_embedding = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
             self.pos_embedding2 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
             self.pos_embedding3 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
-            #self.pos_embedding4 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
+            # self.pos_embedding4 = nn.Embedding(self.n_pos_labels + 1, hparams.pos_dim)
 
-        #self.pos34 = nn.Linear(512, 256)
-        #self.pos_concat = nn.Linear(768, 256)
+        # self.pos34 = nn.Linear(512, 256)
+        # self.pos_concat = nn.Linear(768, 256)
 
-        enc_dim = self.input_size * 2
+        enc_dim = self.input_size * 2  # 처음 토큰과 마지막 토큰
         if self.pos_embedding is not None:
             # enc_dim += hparams.pos_dim*3
-            enc_dim += hparams.pos_dim*3
+            enc_dim += hparams.pos_dim * 3
         # self.pos_encoder = PositionalEncoding(d_model=2560, dropout=0.33)
-        #self.transformer_model = TransformerModel_Layer(d_model=1792, d_hid=768, nhead=8, nlayers=3,
-        #                                                dropout=0.33)  # transformer layer 추가,d_model= feature개수
         self.transformer_model = TransformerModel_Layer(d_model=2304, d_hid=768, nhead=8, nlayers=3,
                                                         dropout=0.33)  # transformer layer 추가,d_model= feature개수
 
@@ -141,21 +139,21 @@ class DPTransformer(BaseTransformer):
             pos_outputs = self.pos_embedding(pos_ids)  # 맨뒤
             pos_outputs2 = self.pos_embedding2(pos_ids2)  # 맨뒤 하나 앞
             pos_outputs3 = self.pos_embedding3(pos_ids3)  # 맨앞
-            #pos_outputs4 = self.pos_embedding4(pos_ids4)  # 있,없
+            # pos_outputs4 = self.pos_embedding4(pos_ids4)  # 있,없
             pos_outputs = self.dropout(pos_outputs)
             pos_outputs2 = self.dropout(pos_outputs2)
             pos_outputs3 = self.dropout(pos_outputs3)
-            #pos_outputs4 = self.dropout(pos_outputs4)
+            # pos_outputs4 = self.dropout(pos_outputs4)
 
-            #pos_outputs34 = torch.cat([pos_outputs3, pos_outputs4], dim=2)
-            #pos_outputs34_2 = self.pos34(pos_outputs34)
+            # pos_outputs34 = torch.cat([pos_outputs3, pos_outputs4], dim=2)
+            # pos_outputs34_2 = self.pos34(pos_outputs34)
             # pos_outputs234 = torch.cat([pos_outputs2, pos_outputs34_2], dim=2)
             # pos_outputs234_2 = self.pos34(pos_outputs234)
             # pos_outputs1234 = torch.cat([pos_outputs, pos_outputs234_2], dim=2)
             # pos_outputs1234_2 = self.pos34(pos_outputs1234)
 
             pos_concat = torch.cat([pos_outputs, pos_outputs2, pos_outputs3], dim=2)
-            #pos_outputs_concat = self.pos_concat(pos_concat)
+            # pos_outputs_concat = self.pos_concat(pos_concat)
 
             # outputs = torch.cat([outputs, pos_outputs1234_2], dim=2)
             outputs = torch.cat([outputs, pos_concat], dim=2)
@@ -195,8 +193,6 @@ class DPTransformer(BaseTransformer):
         out_arc = self.attention(arc_h, arc_c, mask_d=mask_d, mask_e=mask_e).squeeze(
             dim=1)  # arc_h = LSTM decoder = Q = 피지배소 벡터 = 입력 어절, arc_c = K = LSTM Encoder = 지배소 벡터
 
-
-
         # use predicted head_ids when validation step
         if not is_training:
             head_ids = torch.argmax(out_arc, dim=2)  # [b, 입력어절, 모든어절에 대한 attention 값들]
@@ -221,7 +217,8 @@ class DPTransformer(BaseTransformer):
 
         # forward
         out_arc, out_type = self(
-            bpe_head_mask, bpe_tail_mask, pos_ids, pos_ids2, pos_ids3, pos_ids4, pos_ids5, head_ids, max_word_length, mask_e,
+            bpe_head_mask, bpe_tail_mask, pos_ids, pos_ids2, pos_ids3, pos_ids4, pos_ids5, head_ids, max_word_length,
+            mask_e,
             mask_d, batch_index, **inputs
         )
 
@@ -276,32 +273,76 @@ class DPTransformer(BaseTransformer):
             **inputs,
         )
 
-
-        #regulation_Eoseo = [[[int(1) for i in range(out_arc.size()[2])] for j in range(out_arc.size()[1])] for k in
+        # regulation_Eoseo = [[[int(1) for i in range(out_arc.size()[2])] for j in range(out_arc.size()[1])] for k in
         #                    range(out_arc.size()[0])]
-        #regulation_EC = [[[int(1) for i in range(out_arc.size()[2])] for j in range(out_arc.size()[1])] for k in
+        # regulation_EC = [[[int(1) for i in range(out_arc.size()[2])] for j in range(out_arc.size()[1])] for k in
         #                    range(out_arc.size()[0])]
+        """
+        for i in range(pos_ids4.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+            for j in range(pos_ids4.size()[1]):  # 입력어절 판별
 
-        #num1=0
-        #num2=0
-        #num3=0
-        #num4=0
-        last_Eojeol=[]
-        #last_Eojeol.append(0)
-        #print(pos_ids.size())
-
-        #print("last_Eojeol:",last_Eojeol) #batch, Eojeol -> 각 문장 별 last_Eojeol_index
-        #print("len(last_Eojeol):",len(last_Eojeol))
-
+                if pos_ids4[i][j].item() == 3:  # 어서
+                    if pos_ids[i][j].item() == 36 or pos_ids2[i][j] == 36:  # EC
+                        # print(pos_ids4[i][j])
+                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                            if pos_ids3[i][k] == 10 or pos_ids3[i][k] == 11: # or pos_ids3[i][k] == 12 or pos_ids3[i][
+                                #k] == 13:  # NNP, NNB
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    regulation_Eoseo[i][j - 1][k] = 0
+                                # print(pos_ids3[i][k]) #여기 pos_ids3==0 and pos_ids2[i][k]==10,11 추가
+                            elif pos_ids2[i][k] == 0:
+                                if pos_ids[i][k] == 10 or pos_ids[i][k] == 11: #or pos_ids[i][k] == 12 or pos_ids[i][
+                                    #k] == 13:
+                                    if out_arc[i][j - 1][k].item() > 0:
+                                        regulation_Eoseo[i][j - 1][k] = 0
+        """
+        """
+                if pos_ids5[i][j].item() == 1: #고
+                    #print("pos_ids[i][j].item():",pos_ids[i][j].item())
+                    if pos_ids[i][j].item() == 36:
+                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                            #if pos_ids3[i][k] == 10 or pos_ids3[i][k] == 11 or pos_ids3[i][k] == 12 or pos_ids3[i][
+                            if pos_ids3[i][k] == 12 or pos_ids3[i][k] == 13:  # NNP, NNB
+                                # print(pos_ids4[i][j])
+                                # if out_arc[i][j - 1][k].item() > 0:
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    regulation_Eoseo[i][j - 1][k] = 0
+                """
+        # num1=0
+        # num2=0
+        # num3=0
+        # num4=0
+        last_Eojeol = []
+        # last_Eojeol.append(0)
+        # print(pos_ids.size())
+        """s
         for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
             for j in range(pos_ids3.size()[1]):  # 입력어절 판별
-                #if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
-                if not pos_ids[i][j].item() == 22 and not pos_ids[i][j].item() == 23: #문장부사 (MAJ,MAG) : 문장부사는 예외적으로 보조용언에 붙음
-                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                if j != 0 and pos_ids[i][j].item() == 56:
+                    last_Eojeol.append(j - 1)
+                    # print(i)
+                    break
+                elif j == (pos_ids3.size()[1] - 1):
+                    last_Eojeol.append(j - 1)
+                    # print(j-1)
+                    # print(i)
+                    break
+        # print("last_Eojeol:",last_Eojeol) #batch, Eojeol -> 각 문장 별 last_Eojeol_index
+        # print("len(last_Eojeol):",len(last_Eojeol))
+        """
+        """
+        for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+            for j in range(pos_ids3.size()[1]):  # 입력어절 판별
+
+                if pos_ids2[i][j].item() == 14 or pos_ids2[i][j].item() == 4 or pos_ids2[i][j].item() == 5 or \
+                        pos_ids2[i][j].item() == 6 or pos_ids2[i][j] == 15:  # VV, 자, 타, 자타, 형용사
+                    # print("pos_ids2[i]:",pos_ids2[i])
+                    if pos_ids[i][j].item() == 36:  # EC : VV+EC
+                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
                             if pos_ids3[i][k].item() == 16:  # VX+pos2+pos
                                 # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
                                 # num1=num1+1
-                                if not k == j + 1 and k > j and not j == 0:  # j k 10 11 10 12, j-1 =10 k>=12 10 12
+                                if not k == j + 1 and k > j and not k == 0 and not j == 0:  # j k 10 11 10 12, j-1 =10 k>=12 10 12
                                     # num2=num2+1
                                     if out_arc[i][j - 1][k].item() > 0:
                                         # regulation_Eoseo[i][j - 1][k] = 0
@@ -312,69 +353,183 @@ class DPTransformer(BaseTransformer):
                                     # num4=num4+1
                                     # print(pos_ids2[i][k],pos_ids[i][k])
                                     if out_arc[i][j - 1][k].item() > 0:
-                                        out_arc[i][j - 1][k] = 0
-
-        for i in range(pos_ids2.size()[0]):  # 의사보조용언(NNB) 처리
+                                        # regulation_Eoseo[i][j - 1][k] = 0
+                                        out_arc[i][j - 1][k]
+                if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
+                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                        # if i != 0 and j != 0 and last_Eojeol[i] == k:  # 마지막 어절 index
+                        #    print("i,j:", i, j)
+                        #    print("pos_ids[i][j].item():", pos_ids[i][j].item())
+                        #    print("pos_ids[i][j+1].item():", pos_ids[i][j + 1].item())
+                        if pos_ids5[i][k].item() == 2 or pos_ids5[i][k].item() == 3 or pos_ids5[i][k].item() == 4:  ##VV,VA,VX 있,없 #[k-1]==JKB or 동작성명사 예외처리 해야할 것
+                            if k > j and not k == j + 1 and not j == 0:  # and k < last_Eojeol[i]:#and not pos_ids[i][k].item() != 56 and not k!=last_Eojeol[i]:
+                                # if pos_ids5[i][k].item()==2: #VV,VA,VX 있,없 #[k-1]==JKB or 동작성명사 예외처리 해야할 것
+                                # print(i,j,k)
+                                # print(pos_ids)
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+                                    """
+        
+        for i in range(pos_ids2.size()[0]):  # 보조용언(VX) 처리
             for j in range(pos_ids3.size()[1]):  # 입력어절 판별
                 # if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
-                if not pos_ids[i][j].item() == 22 and not pos_ids[i][j].item() == 23: #문장부사는 보조용언에 붙음
-                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
-                        if pos_ids5[i][k].item() == 5 and (pos_ids[i][k-1].item()==38):  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
-                            # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
-                            # num1=num1+1
-                            if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해달어절로 갈 수 없다 -> attention 0
+                for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                    if pos_ids3[i][k].item() == 16:  # VX+pos2+pos
+                        # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
+                        # num1=num1+1
+                        if (pos_ids[i][j].item() == 22 or pos_ids[i][
+                            j].item() == 23) and j == 1:  # 문장부사는 보조용언에 붙음, 앞에 본용언에 못 붙도록
+                            if out_arc[i][j - 1][k - 1].item() > 0:
+                                # regulation_Eoseo[i][j - 1][k] = 0
+                                out_arc[i][j - 1][k - 1] = 0
+                        else:
+                            if not k == j + 1 and k > j and not j == 0:  # j k 10 11 10 12, j-1 =10 k>=12 10 12
                                 # num2=num2+1
                                 if out_arc[i][j - 1][k].item() > 0:
                                     # regulation_Eoseo[i][j - 1][k] = 0
                                     out_arc[i][j - 1][k] = 0
-
-                        #elif pos_ids5[i][k].item() == 8 and (pos_ids[i][k-1].item()==38 or pos_ids[i][k-1].item()==9):  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
-                        elif pos_ids5[i][k].item() == 8 and (pos_ids4[i][k - 1].item() == 7) and not k==0:  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
+                    elif pos_ids3[i][k].item() == 0 and pos_ids2[i][k].item() == 16:  # VX+pos:
+                        # num3=num3+1
+                        if (pos_ids[i][j].item() == 22 or pos_ids[i][
+                            j].item() == 23) and j == 1:  # 문장부사는 보조용언에 붙음, 앞에 본용언에 못 붙도록
+                            if out_arc[i][j - 1][k - 1].item() > 0:
+                                # regulation_Eoseo[i][j - 1][k] = 0
+                                out_arc[i][j - 1][k - 1] = 0
+                        else:
+                            if not k == j + 1 and k > j and not j == 0:  # j k 10 11 10 12, j-1 =10 k>=12 10 12
+                                # num2=num2+1
                                 if out_arc[i][j - 1][k].item() > 0:
                                     # regulation_Eoseo[i][j - 1][k] = 0
                                     out_arc[i][j - 1][k] = 0
-
-        for i in range(pos_ids5.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
-                start=-1
-                end=-1
-            #if 6 in pos_ids5[i] and 7 in pos_ids5[i] :
-                for j in range(pos_ids5.size()[1]):
-                    if pos_ids5[i][j].item() == 6:
-                        #print(6)
-                        start=j
-                        break
-                for j in range(pos_ids5.size()[1]):
-                    if pos_ids5[i][j].item() == 7:
-                        #print(7)
-                        end=j
-                        break
-                if start!=-1 and end!=-1:
-                    #print(start, end)
-                    for j in range(pos_ids3.size()[1]):  # 입력어절 판별
-                        if j<start and j==0 and (pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33):
-                            for k in range(pos_ids5.size()[1]):  # 전체 어절 탐색
-                                if k < j and not k == 0 and k==end:
+                                    
+        
+        """
+        for i in range(pos_ids2.size()[0]):  # 의사보조용언(NNB) 처리
+            for j in range(pos_ids3.size()[1]):  # 입력어절 판별
+                # if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
+                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                        if pos_ids5[i][k].item() == 5 and (pos_ids[i][k-1].item()==38):  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
+                            # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
+                            # num1=num1+1
+                            if (pos_ids[i][j].item() == 22 or pos_ids[i][j].item() == 23) and j == 1:  # 문장부사는 보조용언에 붙음, 앞에 본용언에 못 붙도록
+                                if out_arc[i][j - 1][k-1].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k-1] = 0
+                            else :
+                                if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                    # num2=num2+1
                                     if out_arc[i][j - 1][k].item() > 0:
                                         # regulation_Eoseo[i][j - 1][k] = 0
                                         out_arc[i][j - 1][k] = 0
-                                # """ 이거 테스트 4-2, 인용절 두개일때
+                        elif pos_ids5[i][k].item() == 8 and (pos_ids[i][k-1].item()==38 or pos_ids[i][k-1].item()==9):  # 의사 보조용언 "중"이고 앞에 절이 ETM(ㄴ/ㄹ) or NNG 일 때
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+        """
+
+        
+        for i in range(pos_ids2.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+            for j in range(pos_ids3.size()[1]):  # 입력어절 판별
+                # if pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33:  # EC or JX :
+                if not pos_ids[i][j].item() == 22 and not pos_ids[i][j].item() == 23:  # 문장부사는 보조용언에 붙음
+                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                        if pos_ids5[i][k].item() == 5 and (
+                                pos_ids[i][k - 1].item() == 38):  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
+                            # print(pos_ids3[i][k],pos_ids2[i][k],pos_ids[i][k])
+                            # num1=num1+1
+                            if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                # num2=num2+1
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+                        elif pos_ids5[i][k].item() == 8 and (pos_ids[i][k - 1].item() == 38 or pos_ids[i][
+                            k - 1].item() == 9):  # 의사 보조용언이고 앞에 절이 ETM(ㄴ/ㄹ)일 때
+                            if out_arc[i][j - 1][k].item() > 0:
+                                # regulation_Eoseo[i][j - 1][k] = 0
+                                out_arc[i][j - 1][k] = 0
+        
+        # """ 이거 테스트 3-29, 인용절 하나일때
+        
         for i in range(pos_ids5.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+            start = -1
+            end = -1
+            # if 6 in pos_ids5[i] and 7 in pos_ids5[i] :
+            for j in range(pos_ids5.size()[1]):
+                if pos_ids5[i][j].item() == 6:
+                    # print(6)
+                    start = j
+                    break
+            for j in range(pos_ids5.size()[1]):
+                if pos_ids5[i][j].item() == 7:
+                    # print(7)
+                    end = j
+                    break
+            if start != -1 and end != -1:
+                # print(start, end)
                 for j in range(pos_ids3.size()[1]):  # 입력어절 판별
-                                        if j != 0 and (pos_ids2[i][j].item() == 46 and pos_ids[i][
-                                            j].item() == 36):  # 입력이 SS+EC
-                                            for k in range(pos_ids5.size()[1]):  # 전체 어절 탐색
-                                                if k < j and not k == 0 and (pos_ids2[i][j].item() == 33 and pos_ids[i][
-                                                    j].item() == 32):  ##SS+JKQ
-                                                    if out_arc[i][j - 1][k].item() > 0:
-                                                        out_arc[i][j - 1][k] = 0
+                    if j < start and j == 0 and (
+                            pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33):  # 입력이 EC or JX
+                        for k in range(pos_ids5.size()[1]):  # 전체 어절 탐색
+                            if k < j and not k == 0 and k == end:
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+        
 
 
+            # """ 이거 테스트 3-29, 인용절 두개일때
+
+        
+            for i in range(pos_ids5.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+                start = -1
+                end = -1
+                # if 6 in pos_ids5[i] and 7 in pos_ids5[i] :
+                for j in range(pos_ids5.size()[1]):
+                    if pos_ids5[i][j].item() == 6:
+                        # print(6)
+                        start = j
+                        break
+                for j in range(pos_ids5.size()[1]):
+                    if pos_ids5[i][j].item() == 7:
+                        # print(7)
+                        end = j
+                        break
+                if start != -1 and end != -1:
+                    # print(start, end)
+                    for j in range(pos_ids3.size()[1]):  # 입력어절 판별
+                        if j < start and j == 0 and (
+                                pos_ids[i][j].item() == 36 or pos_ids[i][j].item() == 33):  # 입력이 EC or JX
+                            for k in range(pos_ids5.size()[1]):  # 전체 어절 탐색
+                                if k < j and not k == 0 and k == end:
+                                    if out_arc[i][j - 1][k].item() > 0:
+                                        # regulation_Eoseo[i][j - 1][k] = 0
+                                        out_arc[i][j - 1][k] = 0
+        
+            # """ 이거 테스트 4-2, 인용절 두개일때
+
+        
+            for i in range(pos_ids5.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
+                for j in range(pos_ids3.size()[1]):  # 입력어절 판별
+                    if j != 0 and (pos_ids2[i][j].item() == 46 and pos_ids[i][j].item() == 36):  # 입력이 SS+EC
+                        for k in range(pos_ids5.size()[1]):  # 전체 어절 탐색
+                            if k < j and not k == 0 and (
+                                    pos_ids2[i][j].item() == 33 and pos_ids[i][j].item() == 32):  ##SS+JKQ
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    out_arc[i][j - 1][k] = 0
+            #관형사 제외가 명사에 붙는 경우
+            for i in range(pos_ids.size()[0]):
+                for j in range(pos_ids.size()[1]):
+                    if pos_ids[i][j].item() == 33 or pos_ids[i][j].item() == 36 or (26<=pos_ids[i][j].item()<=32 and pos_ids[i][j].item()!=28):  # JX, EC ,  :
+                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                            if pos_ids5[i][k].item() == 1:
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    out_arc[i][j - 1][k] = 0
+        
 
 
-
-
-                #if j == last_Eojeol[i]:
-                #    print(pos_ids[i][j].item(), pos_ids[i][j + 1].item())
+            # if j == last_Eojeol[i]:
+            #    print(pos_ids[i][j].item(), pos_ids[i][j + 1].item())
         """
                 if pos_ids[i][j].item() == 33:  # JX :
                     for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
@@ -406,43 +561,113 @@ class DPTransformer(BaseTransformer):
                         #        print(pos_ids[i][k+1].item())
                         """
 
+        # print(regulation_Eoseo[i][j - 1])
 
-
-
-
-                #print(regulation_Eoseo[i][j - 1])
-
-
-        #regulation_Eoseo = regulation_Eoseo * regulation_EC
+        # regulation_Eoseo = regulation_Eoseo * regulation_EC
         # tensor_regulation_Eoseo = torch.Tensor(regulation_Eoseo).cuda()
-        #tensor_regulation_EC = torch.Tensor(regulation_EC).cuda()
+        # tensor_regulation_EC = torch.Tensor(regulation_EC).cuda()
 
         # print(out_arc[0][0][0].item())
         # print(type(out_arc[0][0][0].item()))
-        #out_arc = out_arc * tensor_regulation_Eoseo
-        #out_arc = out_arc * tensor_regulation_EC
+        # out_arc = out_arc * tensor_regulation_Eoseo
+        # out_arc = out_arc * tensor_regulation_EC
+
+
+        """s 
+        for i in range(pos_ids2.size()[0]):  # 의존명사(NNB) 처리
+            for j in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                    if pos_ids[i][j].item() == 26 and pos_ids[i][j].item() == 33 and pos_ids[i][j].item() == 36:  # 피지배소가 주어 일때
+                        for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                            if pos_ids3[i][k].item() == 11 and pos_ids5[i][k].item() == 1 and pos_ids5[i][k].item() == 8:  # 지배소가 의존명사일 경우 바로 앞 어절에만 붙도록
+                                if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                    # num2=num2+1
+                                    if out_arc[i][j - 1][k].item() > 0:
+                                        # regulation_Eoseo[i][j - 1][k] = 0
+                                        out_arc[i][j - 1][k] = 0
+                            elif pos_ids3[i][k].item() == 0 and pos_ids2[i][k].item() == 11 and pos_ids5[i][k].item() == 1 and pos_ids5[i][k].item() == 8:
+                                if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                    # num2=num2+1
+                                    if out_arc[i][j - 1][k].item() > 0:
+                                        # regulation_Eoseo[i][j - 1][k] = 0
+                                        out_arc[i][j - 1][k] = 0
+            """
+
+
+        for i in range(pos_ids2.size()[0]):  # 의존명사(NNB) 처리
+            for j in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                if not pos_ids[i][j].item() == 26 and not pos_ids[i][j].item() == 33 and not pos_ids[i][j].item() == 36:  # 피지배소가 주어 일때
+                    for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                        if pos_ids3[i][k].item() == 11 and not (pos_ids5[i][k].item() == 9):# or pos_ids5[i][k].item() == 8):  # 지배소가 의존명사일 경우 바로 앞 어절에만 붙도록
+                            if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                # num2=num2+1
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+                        elif pos_ids3[i][k].item() == 0 and pos_ids2[i][k].item() == 11 and not (pos_ids5[i][k].item() == 9):# or pos_ids5[i][k].item() == 8):
+                            if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                # num2=num2+1
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    # regulation_Eoseo[i][j - 1][k] = 0
+                                    out_arc[i][j - 1][k] = 0
+
+
+
+        for i in range(pos_ids2.size()[0]):  # 본용언+본용언처리
+            for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                if pos_ids3[i][k].item() == 14 or (pos_ids3[i][k].item() == 0 and pos_ids2[i][k].item() == 14):
+                    if pos_ids3[i][k-1].item() == 14 or (pos_ids3[i][k-1].item() == 0 and pos_ids2[i][k-1].item() == 14):
+                        for j in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                                if not k == j + 1 and k > j and not j == 0:  # 입력 j에 대한 바로 뒤 어절 k 가 아니라면 해당어절로 갈 수 없다 -> attention 0
+                                    # num2=num2+1
+                                    if out_arc[i][j - 1][k].item() > 0:
+                                        # regulation_Eoseo[i][j - 1][k] = 0
+                                        out_arc[i][j - 1][k] = 0
+
+        """
+        for i in range(pos_ids2.size()[0]):  # 맨 마지막 앞 어절 처리
+            for k in range(pos_ids3.size()[1]):  # 전체 어절 탐색
+                if len(pos_ids[i])<k:
+                    if pos_ids[i][k+1].item() == 56:
+                        if out_arc[i][k - 2][0].item() > 0:
+                            # regulation_Eoseo[i][j - 1][k] = 0
+                            out_arc[i][k - 2][0] = 0
+                            """
+
+
+
+
+        """s 0.08 + 0.02(에러11) 향상
+        for i in range(pos_ids5.size()[0]):
+            for j in range(pos_ids5.size()[1]):
+                if pos_ids[i][j].item() == 38:
+                    for k in range(pos_ids5.size()[1]):
+                        if pos_ids5[i][k].item() == 9 and not pos_ids3[i][k].item() == 9 and not pos_ids2[i][k].item() == 9: #관형절은 용언구에 붙지 못함
+                            if not k == j + 1 and k > j and not j == 0:
+                                if out_arc[i][j - 1][k].item() > 0:
+                                    out_arc[i][j-1][k] = 0
+        """
 
         for i in range(out_arc.size()[0]):
             for j in range(out_arc.size()[1]):
                 for m in range(out_arc.size()[2]):
-                    if not j+1<m and not m==0: #10번째 어절은 m이 11(j+1)보다 커야 지배소로 가질 수 있음 -> 10번째 어절이 <=11
+                    if not j + 1 < m and not m == 0:  # 10번째 어절은 m이 11(j+1)보다 커야 지배소로 가질 수 있음 -> 10번째 어절이 <=11
                         if out_arc[i][j][m].item() > 0:
                             # print(j, m)
                             out_arc[i][j][m] = 0
                             # print(regulation_Eoseo[i][j - 1][m])
 
-        #print(out_arc.size()[0])
-        #print(out_arc[0])
+        # print(out_arc.size()[0])
+        # print(out_arc[0])
 
-        #print("num1:",num1)
-        #print("num2:", num2)
-        #print("num3:", num3)
-        #print("num4:", num4)
+        # print("num1:",num1)
+        # print("num2:", num2)
+        # print("num3:", num3)
+        # print("num4:", num4)
         # predict arc and its type
         heads = torch.argmax(out_arc, dim=2)  # index : 0 1 2 3 4 5 6
         types = torch.argmax(out_type, dim=2)
-        #print(heads)
-        #print(heads.size()) #batch, root 미포함 어절개수
+        # print(heads)
+        # print(heads.size()) #batch, root 미포함 어절개수
 
         """    
         for i in range(pos_ids.size()[0]):  # 각 pos_ids 값 참조 코드, 각 batch 전체 돔, i는 batch_id
@@ -560,10 +785,11 @@ class DPTransformer(BaseTransformer):
                 (outputs[batch_id][0], outputs[batch_id][0])
             )  # replace root with [CLS]
             for i, (head, tail) in enumerate(zip(head_ids, tail_ids)):
-                word_outputs[batch_id][i + 1] = torch.cat((outputs[batch_id][head], outputs[batch_id][tail]))
-            sent_len.append(i + 2)
+                # print(head,tail)
 
-        return word_outputs, sent_len
+                word_outputs[batch_id][i + 1] = torch.cat(
+                    (outputs[batch_id][head], outputs[batch_id][tail]))  # 여기에 tail 바로앞 추가해야
+            sent_len.append(i + 2)
 
         return word_outputs, sent_len
 
