@@ -13,6 +13,7 @@
     예) NP_SBJ, VP_MOD
 
 - 평가 Metric: UAS(지배소 정답 개수), LAS(레이블 정답 개수) 
+![image](https://user-images.githubusercontent.com/66815358/182911626-3c366a7d-1dd1-493a-b023-d86d37569114.png)
 
 
 
