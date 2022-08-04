@@ -85,7 +85,7 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 
 ## 결과 분석
 
-## 모델 장점
+## 모델 특징
 - 데이터에 태깅 에러가 있음에도 잘 예측할 수 있다 : 오류가 있어도 됨
 
 - 학습시간을 줄일 수 있다 : 
