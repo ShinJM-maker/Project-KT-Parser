@@ -119,7 +119,7 @@ UAS 95.76 LAS 92.55
 - 타 모델들과 성능 비교
 
 ![성능비교(8-05)](https://user-images.githubusercontent.com/66815358/182920071-79ac233f-0ce9-438d-b225-daab8ef2df81.png)
-
+    - UAS에서 SOTA를 달성하였으며, 기존 최고성능 모델대비 UAS 0.96가 높음
 - 학습 속도
 ![학습속도](https://user-images.githubusercontent.com/66815358/182920925-268e142a-a8c7-4488-b281-3f8f524f9d8b.png)
    - 학습데이터 1/8
