@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해주셔야 합니다.
+requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해야 합니다.
 
 Make sure you have installed the packages listed in requirements.txt.
 
