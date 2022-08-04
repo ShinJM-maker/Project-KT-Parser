@@ -173,11 +173,11 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 
 
 ## 학습 결과
-UAS 95.76 LAS 92.55
+- UAS 95.76 LAS 92.55
 
-학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있음
-왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS
-정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인됨
+- 학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있음
+- 왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS
+- 정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인됨
 
 ## 결과 분석
 - 성능 향상
