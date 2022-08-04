@@ -45,7 +45,8 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 
 ## 데이터셋
 - 21세기 세종계획 구구조 구문분석 말뭉치를 포함한 200만 어절(15만 문장) 
-- 가이드라인 : 정보통신단체표준(TTAS)- 의존 구문분석 말뭉치 구축을 위한 의존관계 태그세트 및 의존관계 설정방법(2015, TTAS 표준)
+- 가이드라인 : 정보통신단체표준(TTAS)
+    - 의존 구문분석 말뭉치 구축을 위한 의존관계 태그세트 및 의존관계 설정방법(2015, TTAS 표준)
 
 - 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
 http://pnuailab.synology.me/sharing/ivl3ZfN6p
