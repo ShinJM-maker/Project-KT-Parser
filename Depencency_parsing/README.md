@@ -79,13 +79,20 @@ python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir 
 
 python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
-
+## 결과 확인
 
 ## 학습 결과
 
 ## 결과 분석
 
 ## 모델 장점
+- 데이터에 태깅 에러가 있음에도 잘 예측할 수 있다 : 오류가 있어도 됨
+
+- 학습시간을 줄일 수 있다 : 
+
+- 설명이 가능하다 : 
+
+- 다른모델에도 적용할 수 있다(일반화) : 
 
 ## 
 
