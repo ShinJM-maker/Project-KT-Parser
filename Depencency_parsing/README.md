@@ -40,25 +40,25 @@
 
 ## Dependencies
 
-requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해야 한다.
+requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축
 
 Make sure you have installed the packages listed in requirements.txt.
 
-다음과 같은 명령어를 통해서 필요한 패키지를 설치할 수 있다.
+다음과 같은 명령어를 통해서 필요한 패키지를 설치가능
 
 ```
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-모든 실험들은 파이썬 3.7 버전에서 진행되었으며, 패키지들의 Dependency를 위해서 3.7 버전(혹은 이상)의 파이썬 사용을 권장한다.
+모든 실험들은 파이썬 3.7 버전에서 진행되었으며, 패키지들의 Dependency를 위해서 3.7 버전(혹은 이상)의 파이썬 사용을 권장
 
 All expereiments are tested under Python 3.7 environment.
 
 
 ## 모델 구현 코드
 
-DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있다. (DPTransformer 클래스)
+DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있음 (DPTransformer 클래스)
 
 ## 데이터셋
 - 21세기 세종계획 구구조 구문분석 말뭉치를 포함한 200만 어절(14만 5천 문장)
