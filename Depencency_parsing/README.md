@@ -109,8 +109,15 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있습니다. 왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS 이며 정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인하시면 됩니다.
 
 ## 학습 결과
-- UAS 9
+UAS 95.76 LAS 92.55
+
 ## 결과 분석
+- 성능 향상
+    - 과제 시작(1월 대비) 7월 보고 기준 UAS 5.52, LAS 7.42% 향상
+![성능결과(8-05)](https://user-images.githubusercontent.com/66815358/182917840-74f95216-ac07-4523-86f1-661276c9be6d.png)
+
+- 타 모델들과 성능 비교
+    - 
 
 ## 모델 특징
 - 데이터에 태깅 에러가 있음에도 잘 예측할 수 있다 : 오류가 있어도 됨
