@@ -117,7 +117,8 @@ UAS 95.76 LAS 92.55
 ![성능결과(8-05)](https://user-images.githubusercontent.com/66815358/182917840-74f95216-ac07-4523-86f1-661276c9be6d.png)
 
 - 타 모델들과 성능 비교
-    - 
+
+![성능비교(8-05)](https://user-images.githubusercontent.com/66815358/182920071-79ac233f-0ce9-438d-b225-daab8ef2df81.png)
 
 ## 모델 특징
 - 데이터에 태깅 에러가 있음에도 잘 예측할 수 있다 : 오류가 있어도 됨
