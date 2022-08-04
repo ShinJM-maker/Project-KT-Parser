@@ -1,6 +1,6 @@
 ## KT-Parser
 
-본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것입니다.
+본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것이다.
 
 ## 의존 구문 분석이란
 - 자연어 문장을 지배소-피지배소 의존 관계로 분석하는 구문 분석 방법론
@@ -40,25 +40,25 @@
 
 ## Dependencies
 
-requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해야 합니다.
+requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해야 한다.
 
 Make sure you have installed the packages listed in requirements.txt.
 
-다음과 같은 명령어를 통해서 필요한 패키지를 설치할 수 있습니다.
+다음과 같은 명령어를 통해서 필요한 패키지를 설치할 수 있다.
 
 ```
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-모든 실험들은 파이썬 3.7 버전에서 진행되었으며, 패키지들의 Dependency를 위해서 3.7 버전(혹은 이상)의 파이썬 사용을 권장드립니다.
+모든 실험들은 파이썬 3.7 버전에서 진행되었으며, 패키지들의 Dependency를 위해서 3.7 버전(혹은 이상)의 파이썬 사용을 권장한다.
 
 All expereiments are tested under Python 3.7 environment.
 
 
 ## 모델 구현 코드
 
-DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있습니다. (DPTransformer 클래스)
+DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이 되어있다. (DPTransformer 클래스)
 
 ## 데이터셋
 - 21세기 세종계획 구구조 구문분석 말뭉치를 포함한 200만 어절(14만 5천 문장)
@@ -72,13 +72,13 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 
 
 
-- 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
+- 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받을 수 있다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣으면 된다.
 http://pnuailab.synology.me/sharing/ivl3ZfN6p
 
 
 ## 실행
 
-파서 코드 실행을 위해 필요한 변수는 다음과 같습니다.
+파서 코드 실행을 위해 필요한 변수는 다음과 같다
 
 OUTPUT_DIR="klue_output"
 
@@ -88,19 +88,19 @@ VERSION="v1.1"
 
 task="dp"
 
-OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타내며, DATA_DIR은 학습 및 평가를 위한 데이터의 위치를 나타냅니다.
+OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타내며, DATA_DIR은 학습 및 평가를 위한 데이터의 위치를 나타냄
 
-학습 및 평가를 위해서는 다음의 명령어를 실행해주시면 됩니다.
+학습 및 평가를 위해서는 다음의 명령어를 실행하면 됨
 
 - 주요 파라미터
 
-model_name_or_path: 학습에 사용될 Huggingface에 배포된 모델의 URL을 URL을 넣어주시면 됩니다. 현재는 monologg/koelectra-base-v3-discriminator를 사용하고 있습니다.
+model_name_or_path: 학습에 사용될 Huggingface에 배포된 모델의 URL을 URL을 넣으면 됨. 현재는 monologg/koelectra-base-v3-discriminator를 사용
 
-learning_rate: 모델의 학습률을 지정합니다.
+learning_rate: 모델의 학습률을 지정
 
-train_batch_size: 학습을 위한 배치 사이즈를 나타내며, 사용하시는 GPU의 메모리에 맞게 설정하시면 됩니다. 현재는 RTX-3090(24Gb)에 맞게 설정하였습니다.
+train_batch_size: 학습을 위한 배치 사이즈를 나타내며, 사용하는 GPU의 메모리에 맞게 설정. 현재는 RTX-3090(24Gb)에 맞게 설정됨
 
-warmup_ratio: 지정한 비율만큼 처음 학습을 시작했을 때, 훨씬 작은 Learning Rate로 학습을 하도록 하는 파라미터입니다.
+warmup_ratio: 지정한 비율만큼 처음 학습을 시작했을 때, 훨씬 작은 Learning Rate로 학습을 하도록 하는 파라미터
 
 
 - 학습 명령어
@@ -124,9 +124,9 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 ## 학습 결과
 UAS 95.76 LAS 92.55
 
-학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있습니다.
-왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS 입니다.
-정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인하시면 됩니다.
+학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있음
+왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS
+정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인됨
 
 ## 결과 분석
 - 성능 향상
