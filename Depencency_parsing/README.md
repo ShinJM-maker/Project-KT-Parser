@@ -32,6 +32,10 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
 http://pnuailab.synology.me/sharing/ivl3ZfN6p
 
+## Metrics
+UAS
+LAS
+
 
 ## 실행
 
@@ -49,7 +53,7 @@ OUTPUT_DIR은 학습된 모델 및 실험 결과가 저장될 위치를 나타�
 
 학습 및 평가를 위해서는 다음의 명령어를 실행해주시면 됩니다.
 
-주요 파라미터
+- 주요 파라미터
 
 model_name_or_path: 학습에 사용될 Huggingface에 배포된 모델의 URL을 URL을 넣어주시면 됩니다. 현재는 monologg/koelectra-base-v3-discriminator를 사용하고 있습니다.
 
@@ -75,6 +79,15 @@ python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir 
 
 python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
+
+
+## 학습 결과
+
+## 결과 분석
+
+## 모델 장점
+
+## 
 
 ## 학습된 모형 배포(4월 버전)
 
