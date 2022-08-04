@@ -115,11 +115,11 @@ UAS 95.76 LAS 92.55
 - 성능 향상
 
 ![성능결과(8-05)](https://user-images.githubusercontent.com/66815358/182917840-74f95216-ac07-4523-86f1-661276c9be6d.png)
-    - 과제 시작(1월 대비) 7월 보고 기준 UAS 5.52, LAS 7.42% 향상
+   - 과제 시작(1월 대비) 7월 보고 기준 UAS 5.52, LAS 7.42% 향상
 - 타 모델들과 성능 비교
 
 ![성능비교(8-05)](https://user-images.githubusercontent.com/66815358/182920071-79ac233f-0ce9-438d-b225-daab8ef2df81.png)
-    - UAS에서 SOTA를 달성하였으며, 기존 최고성능 모델대비 UAS 0.96가 높음
+   - UAS에서 SOTA를 달성하였으며, 기존 최고성능 모델대비 UAS 0.96가 높음
 - 학습 속도
 ![학습속도](https://user-images.githubusercontent.com/66815358/182920925-268e142a-a8c7-4488-b281-3f8f524f9d8b.png)
    - 학습데이터 1/8
