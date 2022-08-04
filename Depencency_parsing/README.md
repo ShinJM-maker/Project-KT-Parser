@@ -1,6 +1,6 @@
 ## KT-Parser
 
-본 저장소는 PNU AILAB KT-Parser 과제수행을 위한 Dependency Parsing model 코드 공유를 위한 것입니다.
+본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것입니다.
 
 ## Dependencies
 
@@ -12,6 +12,7 @@ Make sure you have installed the packages listed in requirements.txt.
 
 ```
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 모든 실험들은 파이썬 3.7 버전에서 진행되었으며, 패키지들의 Dependency를 위해서 3.7 버전(혹은 이상)의 파이썬 사용을 권장드립니다.
@@ -63,26 +64,31 @@ python dp_main.py train --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${D
 
 - 평가 명령어
 
-python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 4
+python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
 
 
 - 테스트 명령어
 
-python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 4
+python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
 
-## 학습된 모형 배포
+## 학습된 모형 배포(4월 버전)
 
 http://pnuailab.synology.me/sharing/irbmcpyIY
 
 
-## 데모 실행 버전(예정)
+## 데모 실행 버전(Inference 예정)
 
-추후 업데이트 할 예정입니다
+추후 업데이트 할 예정입니다(8월 중 예상)
 
 ## Reference
 
 https://www.koreascience.or.kr/article/CFKO202130060562801.pdf
 
 https://github.com/KLUE-benchmark/KLUE
+
+
+## Announce
+
+Inference : 규칙 적용 Layer로 시스템 구조가 복잡해져 튜닝과정에 있으며 8월 중 업로드할 예정입니다.
