@@ -9,10 +9,12 @@
 
 - 어순이 고정적이지 않고 문장 성분의 생략이 빈번한 한국어에 적합
 
-- 레이블 : 구문태그_기능태그 형태로 태그를 결합하여 사용
+- 의존관계 레이블 : 구문태그_기능태그 형태로 태그를 결합하여 사용
     예) NP_SBJ, VP_MOD
 
-- 평가 Metric: UAS(지배소 정답 개수), LAS(레이블 정답 개수) 
+- 평가 Metric
+    - UAS : 지배소 정답 개수, 해당 어절(의존소)이 어느 어절(지배소)에 의존하는가
+    - LAS : 의존관계 레이블 정답 개수, 해당 어절(의존소)이 어느 어절(지배소)과 어떠한 관계를 가지는가
 
 ![image](https://user-images.githubusercontent.com/66815358/182911626-3c366a7d-1dd1-493a-b023-d86d37569114.png)
 
@@ -58,10 +60,6 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
 - 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
 http://pnuailab.synology.me/sharing/ivl3ZfN6p
 
-## Metrics
-UAS
-LAS
-
 
 ## 실행
 
@@ -105,11 +103,15 @@ python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir 
 
 python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 3 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
-## 결과 확인
-학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있습니다. 왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS 이며 정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인하시면 됩니다.
+
+
 
 ## 학습 결과
 UAS 95.76 LAS 92.55
+
+학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있습니다.
+왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS 입니다.
+정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인하시면 됩니다.
 
 ## 결과 분석
 - 성능 향상
@@ -135,7 +137,6 @@ UAS 95.76 LAS 92.55
 
 - 다른모델에도 적용할 수 있다(일반화) : 
 
-## 
 
 ## 학습된 모형 배포
 
