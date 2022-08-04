@@ -3,7 +3,7 @@
 본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것입니다.
 
 ## 모델구조
-https://user-images.githubusercontent.com/66815358/182843232-7f01c746-0804-4b95-91c3-895886b71727.png
+![모델구조](https://user-images.githubusercontent.com/66815358/182843400-f191a3f7-6b99-4c42-9424-07b2ae4b06ec.png)
 
 ## Dependencies
 
