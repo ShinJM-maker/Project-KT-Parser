@@ -2,6 +2,20 @@
 
 본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것입니다.
 
+## 의존 구문 분석이란
+- 자연어 문장을 지배소-피지배소 의존 관계로 분석하는 구문 분석 방법론
+
+- 문장의 구조적 중의성 해소 가능
+
+- 어순이 고정적이지 않고 문장 성분의 생략이 빈번한 한국어에 적합
+
+- 레이블 : 구문태그_기능태그 형태로 태그를 결합하여 사용
+    예) NP_SBJ, VP_MOD
+
+- 평가 Metric: UAS(지배소 정답 개수), LAS(레이블 정답 개수) 
+- ![image](https://user-images.githubusercontent.com/66815358/182911314-071328b9-c2d8-45a1-9d5d-d98018b1a7d6.png)
+
+
 ## 모델구조
 ![모델구조](https://user-images.githubusercontent.com/66815358/182843400-f191a3f7-6b99-4c42-9424-07b2ae4b06ec.png)
 
