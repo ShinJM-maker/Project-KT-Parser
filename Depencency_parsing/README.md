@@ -2,6 +2,9 @@
 
 본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것입니다.
 
+## 모델구조
+https://ibb.co/6NsJdKy
+
 ## Dependencies
 
 requirements.txt에 해당하는 패키지들을 설치하여 개발 환경을 구축해야 합니다.
