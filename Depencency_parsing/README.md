@@ -48,6 +48,11 @@ DP Parser의 Torch 코드는 /baseline/models/dependency_parsing.py에 작성이
     - 학습(Train) 12만 문장, 개발(Dev) 1만 5천 문장, 평가(Test) 1만 문장
 - 가이드라인 : 정보통신단체표준(TTAS)
     - 의존 구문분석 말뭉치 구축을 위한 의존관계 태그세트 및 의존관계 설정방법(2015, TTAS 표준)
+- 태깅 에러
+    - 추정 품질 평균 : 93.57% -> 추정 태깅 에러 6.43%(지배소에러 + 레이블에러)
+        - 구문 및 무형 대용어 복원 말뭉치 연구 분석(2021, 국립국어원)
+    - 데이터셋의 태깅에러 -> 모델의 학습과 예측에 오류 발생
+
 
 
 - 데이터셋의 용량이 큰 관계로 아래의 공유링크를 사용하여 다운로드 받아주시기 바랍니다. 받은 데이터셋은 data/klue_benchmark에 다운로드받은 폴더를 그대로 넣어주시면 됩니다.
@@ -100,7 +105,8 @@ python dp_main.py evaluate --task ${task} --output_dir ${OUTPUT_DIR} --data_dir 
 
 python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DATA_DIR}/klue-dp-${VERSION}  --model_name_or_path monologg/koelectra-base-v3-discriminator --learning_rate 5e-5 --num_train_epochs 5 --warmup_ratio 0.1 --train_batch_size 16 --patience 10000 --max_seq_length 510 --metric_key train/loss --gpus 0 --num_workers 36
 
-## 결과 확인
+- 결과 확인
+학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있습니다. 왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS 이며 정확한 결과는 두번째 네번째인 Macro UAS와  Macro LAS를 확인하시면 됩니다.
 
 ## 학습 결과
 
@@ -117,7 +123,7 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 
 ## 
 
-## 학습된 모형 배포(4월 버전)
+## 학습된 모형 배포
 
 http://pnuailab.synology.me/sharing/irbmcpyIY
 
@@ -135,4 +141,4 @@ https://github.com/KLUE-benchmark/KLUE
 
 ## Announce
 
-Inference : 규칙 적용 Layer로 시스템 구조가 복잡해져 튜닝과정에 있으며 8월 중 업로드할 예정입니다.
+Inference : 규칙 적용 Layer로 전처리 과정과 모델 파라미터가 복잡해져 추가 튜닝과정에 있으며, 8월 중 업로드할 예정입니다.
