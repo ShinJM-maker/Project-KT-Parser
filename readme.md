@@ -1,6 +1,11 @@
+## 딥러닝 기반 TTS 운율구 경계 예측 연구개발딥러닝 기반 TTS 운율구 경계 예측 연구개발
+2021년 12월 - 2022년 11월
+
 ## KT-Parser
 
 본 저장소는 PNU AILAB KT-Parser 과제의 Dependency Parsing model 코드 공유 및 성과를 공유하기 위한 것이다.
+
+온전한 코드와 Inference는 2023년 1월 26일자로 납품을 완료하였고, 본 레포는 규칙 계층을 제외한 코드를 공유다.
 
 ## 의존 구문 분석이란
 - 자연어 문장을 지배소-피지배소 의존 관계로 분석하는 구문 분석 방법론
@@ -172,8 +177,8 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 
 
 
-## 학습 결과
-- UAS 95.76 LAS 92.55
+## 최종 학습 결과(현재의 모델과 다름)
+- UAS 96.28 LAS 93.19
 
 - 학습 후 model_output 폴더의 Metrics.csv에 매 validation step마다 저장이 되어있음
 - 왼쪽부터 Micro UAS, Macro UAS, Micro LAS, Macro LAS
@@ -186,7 +191,7 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
  
 - 타 모델들과 성능 비교
 ![성능비교(8-05)](https://user-images.githubusercontent.com/66815358/182920071-79ac233f-0ce9-438d-b225-daab8ef2df81.png)
-   - UAS에서 SOTA를 달성하였으며, 기존 최고성능 모델대비 UAS 0.96가 높음
+   - UAS에서 SOTA를 달성하였으며(7월 기준), 기존 최고성능 모델대비 UAS 0.96가 높음
    
 - 학습 속도
 ![학습속도](https://user-images.githubusercontent.com/66815358/182920925-268e142a-a8c7-4488-b281-3f8f524f9d8b.png)
@@ -204,16 +209,17 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 - 에러 분석 및 설명이 가능하다 : 규칙에 의거한 출력값들은 명확히 분석 및 설명이 가능하다.
 
 - 다른모델에도 적용할 수 있다(일반화) : 단순한 아이디어로 규칙만 알고 방법만 안다면 누구든 적용할 수 있으며, 의존구문분석 뿐만 아니라 다른 Task에도 적용할 수 있다.
+  (현재 특허 출원 : 심화학습 기반 지식 추론 시스템을 위한 규칙 필터링 기술 및 방법)
 
 
 ## 학습된 모형 배포
 
-http://pnuailab.synology.me/sharing/irbmcpyIY
+- 삭제
 
 
 ## 데모 실행 버전(Inference 예정)
 
-추후 업데이트 할 예정입니다(8월 중 예상)
+- 추후 업데이트 할 예정입니다 -> 삭제
 
 ## Reference
 
@@ -224,4 +230,4 @@ https://github.com/KLUE-benchmark/KLUE
 
 ## Announce
 
-Inference : 규칙 적용 Layer로 전처리 과정과 모델 파라미터가 복잡해져 추가 튜닝과정에 있으며, 8월 중 업로드할 예정입니다.
+궁금한 점은 tlswndals13@naver.com 로 메일주세요
