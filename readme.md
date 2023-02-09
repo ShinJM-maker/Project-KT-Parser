@@ -218,9 +218,9 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 - 삭제
 
 
-## 데모 실행 버전(Inference 예정)
+## 데모 실행 버전(Inference)
 
-- 추후 업데이트 할 예정입니다 -> 삭제
+- http://genielabs.ai/techspace/detail?domain=nlp&contentsSeq=115
 
 ## Reference
 
