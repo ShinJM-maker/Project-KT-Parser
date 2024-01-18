@@ -208,12 +208,8 @@ python dp_main.py test --task ${task} --output_dir ${OUTPUT_DIR} --data_dir ${DA
 
 ## 학습된 모형 배포
 
-http://pnuailab.synology.me/sharing/irbmcpyIY
+http://pnuailab.synology.me/sharing/irbmcpyIY(현재 사용 불가)
 
-
-## 데모 실행 버전(Inference 예정)
-
-추후 업데이트 할 예정입니다(8월 중 예상)
 
 ## Reference
 
@@ -223,5 +219,3 @@ https://github.com/KLUE-benchmark/KLUE
 
 
 ## Announce
-
-Inference : 규칙 적용 Layer로 전처리 과정과 모델 파라미터가 복잡해져 추가 튜닝과정에 있으며, 8월 중 업로드할 예정입니다.
